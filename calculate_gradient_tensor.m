@@ -3,8 +3,8 @@ function T = calculate_gradient_tensor(B, sensor_pos, a)
 %   T = calculate_gradient_tensor(B, sensor_pos, a) 使用数值差分法计算梯度张量
 %
 %   输入参数:
-%   B          - 传感器测量的磁场矩阵 (6 x 3)
-%   sensor_pos - 传感器位置矩阵 (6 x 3)
+%   B          - 传感器测量的磁场矩阵 (8 x 3)
+%   sensor_pos - 传感器位置矩阵 (8 x 3)
 %   a          - 立方体半边长
 %
 %   输出参数:
@@ -13,25 +13,37 @@ function T = calculate_gradient_tensor(B, sensor_pos, a)
     % 初始化梯度张量
     T = zeros(3, 3);
     
-    % 定义传感器对应关系，增强代码可读性
-    X_POS = 1; X_NEG = 2; % x轴正负方向传感器
-    Y_POS = 3; Y_NEG = 4; % y轴正负方向传感器
-    Z_POS = 5; Z_NEG = 6; % z轴正负方向传感器
+    % 定义传感器索引 - 正六面体顶点结构
+    % 前四个传感器位于x正向，后四个位于x负向
+    % 1-2-5-6在y正向，3-4-7-8在y负向
+    % 1-3-5-7在z正向，2-4-6-8在z负向
+    RIGHT_SENSORS = [1 2 3 4]; % x正方向传感器
+    LEFT_SENSORS = [5 6 7 8];  % x负方向传感器
+    UP_SENSORS = [1 2 5 6];    % y正方向传感器
+    DOWN_SENSORS = [3 4 7 8];  % y负方向传感器
+    FRONT_SENSORS = [1 3 5 7]; % z正方向传感器
+    BACK_SENSORS = [2 4 6 8];  % z负方向传感器
     
-    % 计算各方向上的距离，用于高精度梯度计算
-    dx = norm(sensor_pos(X_POS,:) - sensor_pos(X_NEG,:));
-    dy = norm(sensor_pos(Y_POS,:) - sensor_pos(Y_NEG,:));
-    dz = norm(sensor_pos(Z_POS,:) - sensor_pos(Z_NEG,:));
+    % 计算x方向梯度
+    % 使用右侧四个传感器的平均值减去左侧四个传感器的平均值
+    B_right = mean(B(RIGHT_SENSORS,:), 1);
+    B_left = mean(B(LEFT_SENSORS,:), 1);
+    dx = 2*a; % x方向上的距离
+    T(1:3,1) = (B_right - B_left)' / dx;
     
-    % 使用中心差分法计算梯度，更为准确
-    % x方向梯度（使用传感器1和2）
-    T(1:3,1) = (B(X_POS,:) - B(X_NEG,:))' / dx;
+    % 计算y方向梯度
+    % 使用上方四个传感器的平均值减去下方四个传感器的平均值
+    B_up = mean(B(UP_SENSORS,:), 1);
+    B_down = mean(B(DOWN_SENSORS,:), 1);
+    dy = 2*a; % y方向上的距离
+    T(1:3,2) = (B_up - B_down)' / dy;
     
-    % y方向梯度（使用传感器3和4）
-    T(1:3,2) = (B(Y_POS,:) - B(Y_NEG,:))' / dy;
-    
-    % z方向梯度（使用传感器5和6）
-    T(1:3,3) = (B(Z_POS,:) - B(Z_NEG,:))' / dz;
+    % 计算z方向梯度
+    % 使用前方四个传感器的平均值减去后方四个传感器的平均值
+    B_front = mean(B(FRONT_SENSORS,:), 1);
+    B_back = mean(B(BACK_SENSORS,:), 1);
+    dz = 2*a; % z方向上的距离
+    T(1:3,3) = (B_front - B_back)' / dz;
     
     % 应用Maxwell方程约束：梯度张量满足散度为零的约束
     % 确保梯度张量是对称的

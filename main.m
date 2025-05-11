@@ -64,6 +64,7 @@ end
 num_location_attempts = 3;
 best_error = Inf;
 best_r_estimated = [];
+best_cost_history = [];
 
 for loc_attempt = 1:num_location_attempts
     fprintf('\n\n=== 定位尝试 %d/%d ===\n', loc_attempt, num_location_attempts);
@@ -100,6 +101,7 @@ for loc_attempt = 1:num_location_attempts
     if error_distance < best_error
         best_error = error_distance;
         best_r_estimated = r_estimated;
+        best_cost_history = cost_history;
         fprintf('*** 发现更好的定位结果! ***\n');
     end
 end
@@ -115,8 +117,8 @@ plot_sensor_layout(sensor_pos, r0, r_estimated);
 % 绘制磁场分布
 plot_magnetic_field(sensor_pos, r0, m, mu0);
 
-% 绘制误差收敛曲线
-plot_convergence(cost_history);
+% 绘制优化收敛过程
+plot_convergence(best_cost_history);
 
 %% 输出最终结果
 fprintf('\n=== 最终定位结果 ===\n');
@@ -125,5 +127,7 @@ fprintf('估计位置: [%.2f, %.2f, %.2f]\n', r_estimated);
 fprintf('定位误差: %.4f m\n', error_distance);
 
 % 计算各方向上的误差分量
-fprintf('各方向误差 - X: %.4f m, Y: %.4f m, Z: %.4f m\n', ...
-    abs(r_estimated(1)-r0(1)), abs(r_estimated(2)-r0(2)), abs(r_estimated(3)-r0(3)));
+error_x = abs(r_estimated(1) - r0(1));
+error_y = abs(r_estimated(2) - r0(2));
+error_z = abs(r_estimated(3) - r0(3));
+fprintf('各方向误差 - X: %.4f m, Y: %.4f m, Z: %.4f m\n', error_x, error_y, error_z);

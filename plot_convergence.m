@@ -5,22 +5,34 @@ function plot_convergence(cost_history)
 %   输入参数:
 %   cost_history - 优化过程中的代价函数历史记录
 
-    % 创建新图窗
-    figure('Name', '收敛过程');
-    
-    % 绘制收敛曲线
-    semilogy(1:length(cost_history), cost_history, 'b-', 'LineWidth', 2);
-    
-    % 设置坐标轴标签
-    xlabel('迭代次数');
-    ylabel('代价函数值（对数尺度）');
-    
-    % 添加网格
-    grid on;
-    
-    % 添加标题
-    title('优化算法收敛过程');
-    
-    % 设置y轴为对数尺度
-    set(gca, 'YScale', 'log');
+% 创建新图形窗口
+figure('Name', '优化收敛过程', 'NumberTitle', 'off');
+
+% 绘制半对数图
+semilogy(cost_history, 'LineWidth', 2);
+grid on;
+
+% 添加标签和标题
+xlabel('迭代次数', 'FontSize', 12);
+ylabel('代价函数值', 'FontSize', 12);
+title('定位算法的优化收敛过程', 'FontSize', 14);
+
+% 设置坐标轴属性
+ax = gca;
+ax.FontSize = 10;
+ax.LineWidth = 1.5;
+ax.Box = 'on';
+
+% 添加网格线
+grid minor;
+
+% 设置图形属性
+set(gcf, 'Color', 'white');
+set(gca, 'YScale', 'log');
+
+% 添加图例说明
+legend('代价函数值', 'Location', 'northeast');
+
+% 优化图形显示
+axis tight;
 end
